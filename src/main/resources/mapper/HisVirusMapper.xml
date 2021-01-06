@@ -73,7 +73,7 @@
     </where>
   </sql>
   <sql id="Base_Column_List">
-    SEQUENCE_ID, TASK_ID, FILE_NAME, FILE_MARK, SCAN_TYPE, SCAN_STATUS, START_TIME, END_TIME, 
+    SEQUENCE_ID, TASK_ID, FILE_NAME, FILE_MARK, SCAN_TYPE, SCAN_STATUS, START_TIME, END_TIME,
     DETAIL, UPDATE_TIME, RESERVED
   </sql>
   <select id="selectByExample" parameterType="com.kemyond.virus.domain.HisVirusExample" resultMap="BaseResultMap">
@@ -97,14 +97,18 @@
     </if>
   </delete>
   <insert id="insert" parameterType="com.kemyond.virus.domain.HisVirus">
-    insert into his_virus (SEQUENCE_ID, TASK_ID, FILE_NAME, 
-      FILE_MARK, SCAN_TYPE, SCAN_STATUS, 
-      START_TIME, END_TIME, DETAIL, 
+    insert into his_virus (TASK_ID, FILE_NAME,
+      FILE_MARK, SCAN_TYPE, SCAN_STATUS,
+      START_TIME, END_TIME, DETAIL,
       UPDATE_TIME, RESERVED)
-    values (#{sequenceId,jdbcType=BIGINT}, #{taskId,jdbcType=BIGINT}, #{fileName,jdbcType=VARCHAR}, 
-      #{fileMark,jdbcType=VARCHAR}, #{scanType,jdbcType=TINYINT}, #{scanStatus,jdbcType=TINYINT}, 
-      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{detail,jdbcType=VARCHAR}, 
+    values  #{taskId,jdbcType=BIGINT}, #{fileName,jdbcType=VARCHAR},
+      #{fileMark,jdbcType=VARCHAR}, #{scanType,jdbcType=TINYINT}, #{scanStatus,jdbcType=TINYINT},
+      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{detail,jdbcType=VARCHAR},
       #{updateTime,jdbcType=TIMESTAMP}, #{reserved,jdbcType=VARCHAR})
+       ON DUPLICATE KEY UPDATE
+      FILE_NAME=values(FILE_NAME),SCAN_TYPE=values(SCAN_TYPE),
+      SCAN_STATUS=values(SCAN_STATUS),START_TIME=values(START_TIME),
+      END_TIME=values(END_TIME),DETAIL=values(DETAIL),UPDATE_TIME=values(UPDATE_TIME)
   </insert>
   <insert id="insertSelective" parameterType="com.kemyond.virus.domain.HisVirus">
     insert into his_virus
@@ -243,246 +247,23 @@
       <include refid="Update_By_Example_Where_Clause" />
     </if>
   </update>
-  <resultMap id="BaseResultMap" type="com.kemyond.virus.domain.HisVirus">
-    <result column="SEQUENCE_ID" jdbcType="BIGINT" property="sequenceId" />
-    <result column="TASK_ID" jdbcType="BIGINT" property="taskId" />
-    <result column="FILE_NAME" jdbcType="VARCHAR" property="fileName" />
-    <result column="FILE_MARK" jdbcType="VARCHAR" property="fileMark" />
-    <result column="SCAN_TYPE" jdbcType="TINYINT" property="scanType" />
-    <result column="SCAN_STATUS" jdbcType="TINYINT" property="scanStatus" />
-    <result column="START_TIME" jdbcType="TIMESTAMP" property="startTime" />
-    <result column="END_TIME" jdbcType="TIMESTAMP" property="endTime" />
-    <result column="DETAIL" jdbcType="VARCHAR" property="detail" />
-    <result column="UPDATE_TIME" jdbcType="TIMESTAMP" property="updateTime" />
-    <result column="RESERVED" jdbcType="VARCHAR" property="reserved" />
-  </resultMap>
-  <sql id="Example_Where_Clause">
+  <!--根据查询条件进行数据库查询-->
+  <select id="selecltByCondition" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>  from his_virus
     <where>
-      <foreach collection="oredCriteria" item="criteria" separator="or">
-        <if test="criteria.valid">
-          <trim prefix="(" prefixOverrides="and" suffix=")">
-            <foreach collection="criteria.criteria" item="criterion">
-              <choose>
-                <when test="criterion.noValue">
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue">
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue">
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue">
-                  and ${criterion.condition}
-                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
-            </foreach>
-          </trim>
-        </if>
-      </foreach>
+      <if test="qo.scanType!= null and qo.scanType !=-1">
+        AND SCAN_TYPE=#{qo.scanType}
+      </if>
+      <if test="qo.scanStatus!= null and qo.scanStatus !=-1">
+        AND SCAN_STATUS=#{qo.scanStatus}
+      </if>
+      <if test="qo.startTime!= null and qo.startTime !=''">
+        AND UPDATE_TIME &gt;= #{qo.startTime}
+      </if>
+      <if test="qo.endTime!= null and qo.endTime !=''">
+        AND UPDATE_TIME &lt;= #{qo.endTime}
+      </if>
     </where>
-  </sql>
-  <sql id="Update_By_Example_Where_Clause">
-    <where>
-      <foreach collection="example.oredCriteria" item="criteria" separator="or">
-        <if test="criteria.valid">
-          <trim prefix="(" prefixOverrides="and" suffix=")">
-            <foreach collection="criteria.criteria" item="criterion">
-              <choose>
-                <when test="criterion.noValue">
-                  and ${criterion.condition}
-                </when>
-                <when test="criterion.singleValue">
-                  and ${criterion.condition} #{criterion.value}
-                </when>
-                <when test="criterion.betweenValue">
-                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
-                </when>
-                <when test="criterion.listValue">
-                  and ${criterion.condition}
-                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
-                    #{listItem}
-                  </foreach>
-                </when>
-              </choose>
-            </foreach>
-          </trim>
-        </if>
-      </foreach>
-    </where>
-  </sql>
-  <sql id="Base_Column_List">
-    SEQUENCE_ID, TASK_ID, FILE_NAME, FILE_MARK, SCAN_TYPE, SCAN_STATUS, START_TIME, END_TIME, 
-    DETAIL, UPDATE_TIME, RESERVED
-  </sql>
-  <select id="selectByExample" parameterType="com.kemyond.virus.domain.HisVirusExample" resultMap="BaseResultMap">
-    select
-    <if test="distinct">
-      distinct
-    </if>
-    <include refid="Base_Column_List" />
-    from his_virus
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-    <if test="orderByClause != null">
-      order by ${orderByClause}
-    </if>
+    ORDER BY UPDATE_TIME DESC
   </select>
-  <delete id="deleteByExample" parameterType="com.kemyond.virus.domain.HisVirusExample">
-    delete from his_virus
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-  </delete>
-  <insert id="insert" parameterType="com.kemyond.virus.domain.HisVirus">
-    insert into his_virus (SEQUENCE_ID, TASK_ID, FILE_NAME, 
-      FILE_MARK, SCAN_TYPE, SCAN_STATUS, 
-      START_TIME, END_TIME, DETAIL, 
-      UPDATE_TIME, RESERVED)
-    values (#{sequenceId,jdbcType=BIGINT}, #{taskId,jdbcType=BIGINT}, #{fileName,jdbcType=VARCHAR}, 
-      #{fileMark,jdbcType=VARCHAR}, #{scanType,jdbcType=TINYINT}, #{scanStatus,jdbcType=TINYINT}, 
-      #{startTime,jdbcType=TIMESTAMP}, #{endTime,jdbcType=TIMESTAMP}, #{detail,jdbcType=VARCHAR}, 
-      #{updateTime,jdbcType=TIMESTAMP}, #{reserved,jdbcType=VARCHAR})
-  </insert>
-  <insert id="insertSelective" parameterType="com.kemyond.virus.domain.HisVirus">
-    insert into his_virus
-    <trim prefix="(" suffix=")" suffixOverrides=",">
-      <if test="sequenceId != null">
-        SEQUENCE_ID,
-      </if>
-      <if test="taskId != null">
-        TASK_ID,
-      </if>
-      <if test="fileName != null">
-        FILE_NAME,
-      </if>
-      <if test="fileMark != null">
-        FILE_MARK,
-      </if>
-      <if test="scanType != null">
-        SCAN_TYPE,
-      </if>
-      <if test="scanStatus != null">
-        SCAN_STATUS,
-      </if>
-      <if test="startTime != null">
-        START_TIME,
-      </if>
-      <if test="endTime != null">
-        END_TIME,
-      </if>
-      <if test="detail != null">
-        DETAIL,
-      </if>
-      <if test="updateTime != null">
-        UPDATE_TIME,
-      </if>
-      <if test="reserved != null">
-        RESERVED,
-      </if>
-    </trim>
-    <trim prefix="values (" suffix=")" suffixOverrides=",">
-      <if test="sequenceId != null">
-        #{sequenceId,jdbcType=BIGINT},
-      </if>
-      <if test="taskId != null">
-        #{taskId,jdbcType=BIGINT},
-      </if>
-      <if test="fileName != null">
-        #{fileName,jdbcType=VARCHAR},
-      </if>
-      <if test="fileMark != null">
-        #{fileMark,jdbcType=VARCHAR},
-      </if>
-      <if test="scanType != null">
-        #{scanType,jdbcType=TINYINT},
-      </if>
-      <if test="scanStatus != null">
-        #{scanStatus,jdbcType=TINYINT},
-      </if>
-      <if test="startTime != null">
-        #{startTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="endTime != null">
-        #{endTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="detail != null">
-        #{detail,jdbcType=VARCHAR},
-      </if>
-      <if test="updateTime != null">
-        #{updateTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="reserved != null">
-        #{reserved,jdbcType=VARCHAR},
-      </if>
-    </trim>
-  </insert>
-  <select id="countByExample" parameterType="com.kemyond.virus.domain.HisVirusExample" resultType="java.lang.Long">
-    select count(*) from his_virus
-    <if test="_parameter != null">
-      <include refid="Example_Where_Clause" />
-    </if>
-  </select>
-  <update id="updateByExampleSelective" parameterType="map">
-    update his_virus
-    <set>
-      <if test="record.sequenceId != null">
-        SEQUENCE_ID = #{record.sequenceId,jdbcType=BIGINT},
-      </if>
-      <if test="record.taskId != null">
-        TASK_ID = #{record.taskId,jdbcType=BIGINT},
-      </if>
-      <if test="record.fileName != null">
-        FILE_NAME = #{record.fileName,jdbcType=VARCHAR},
-      </if>
-      <if test="record.fileMark != null">
-        FILE_MARK = #{record.fileMark,jdbcType=VARCHAR},
-      </if>
-      <if test="record.scanType != null">
-        SCAN_TYPE = #{record.scanType,jdbcType=TINYINT},
-      </if>
-      <if test="record.scanStatus != null">
-        SCAN_STATUS = #{record.scanStatus,jdbcType=TINYINT},
-      </if>
-      <if test="record.startTime != null">
-        START_TIME = #{record.startTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.endTime != null">
-        END_TIME = #{record.endTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.detail != null">
-        DETAIL = #{record.detail,jdbcType=VARCHAR},
-      </if>
-      <if test="record.updateTime != null">
-        UPDATE_TIME = #{record.updateTime,jdbcType=TIMESTAMP},
-      </if>
-      <if test="record.reserved != null">
-        RESERVED = #{record.reserved,jdbcType=VARCHAR},
-      </if>
-    </set>
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
-  <update id="updateByExample" parameterType="map">
-    update his_virus
-    set SEQUENCE_ID = #{record.sequenceId,jdbcType=BIGINT},
-      TASK_ID = #{record.taskId,jdbcType=BIGINT},
-      FILE_NAME = #{record.fileName,jdbcType=VARCHAR},
-      FILE_MARK = #{record.fileMark,jdbcType=VARCHAR},
-      SCAN_TYPE = #{record.scanType,jdbcType=TINYINT},
-      SCAN_STATUS = #{record.scanStatus,jdbcType=TINYINT},
-      START_TIME = #{record.startTime,jdbcType=TIMESTAMP},
-      END_TIME = #{record.endTime,jdbcType=TIMESTAMP},
-      DETAIL = #{record.detail,jdbcType=VARCHAR},
-      UPDATE_TIME = #{record.updateTime,jdbcType=TIMESTAMP},
-      RESERVED = #{record.reserved,jdbcType=VARCHAR}
-    <if test="_parameter != null">
-      <include refid="Update_By_Example_Where_Clause" />
-    </if>
-  </update>
 </mapper>

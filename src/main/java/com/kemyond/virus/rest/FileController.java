@@ -21,11 +21,18 @@ import javax.servlet.http.HttpServletRequest;
 public class FileController {
     @Autowired
     private FileService fileService;
+
     @ApiOperation("接收单个文件")
     @PostMapping("/file")
     public Record receiveFile(@RequestParam("file")MultipartFile file,String sha256){
-        return  fileService.saveFile(file,sha256);
+        try {
+            return  fileService.saveFile(file,sha256);
+        }catch (Exception e){
+            return new Record(Record.FAILURE,"接收文件异常",e);
+        }
+
     }
+
     @ApiOperation("接收多个文件")
     @GetMapping("files")
     public  Record receiveFiles(HttpServletRequest request){
